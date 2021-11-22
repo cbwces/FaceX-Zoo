@@ -4,14 +4,14 @@ LFW:
     image_list_file_path: /export2/wangjun492/face_database/facex-zoo/private_file/test_data/lfw/img_list.txt
 
 CPLFW:
-    pairs_file_path: /export2/wangjun492/face_database/facex-zoo/private_file/test_data/cplfw/ori_data/pairs_CPLFW.txt
-    cropped_face_folder: /export2/wangjun492/face_database/facex-zoo/private_file/test_data/cplfw/cplfw_crop
-    image_list_file_path: /export2/wangjun492/face_database/facex-zoo/private_file/test_data/cplfw/img_list.txt
+    pairs_file_path: /home/cbw233/datasets/face_recognition/test/CPLFW/pairs_CPLFW.txt
+    cropped_face_folder: /home/cbw233/datasets/face_recognition/test/CPLFW/images,landmarks/align_new/
+    image_list_file_path: /home/cbw233/datasets/face_recognition/test/CPLFW/image_all_list.txt
 
 CALFW:
-    pairs_file_path: /export2/wangjun492/face_database/facex-zoo/private_file/test_data/calfw/ori_data/pairs_CALFW.txt
-    cropped_face_folder: /export2/wangjun492/face_database/facex-zoo/private_file/test_data/calfw/calfw_crop
-    image_list_file_path: /export2/wangjun492/face_database/facex-zoo/private_file/test_data/calfw/img_list.txt
+    pairs_file_path: /home/cbw233/datasets/face_recognition/test/CALFW/txts/pairs_CALFW.txt
+    cropped_face_folder: /home/cbw233/datasets/face_recognition/test/CALFW/images,landmarks/align_new/
+    image_list_file_path: /home/cbw233/datasets/face_recognition/test/CALFW/txts/image_all_list.txt
 
 AgeDB30:
     pairs_file_path: /export2/wangjun492/face_database/facex-zoo/private_file/test_data/agedb/AgeDB_FINAL_protocol/04_FINAL_protocol_30_years.mat

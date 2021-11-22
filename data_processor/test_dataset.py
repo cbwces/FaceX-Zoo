@@ -32,14 +32,15 @@ class CommonTestDataset(Dataset):
             self.image_list.append(line)
             line = image_list_buf.readline().strip()
         self.mean = 127.5
-        self.std = 128.0
+        self.std = 127.5
         self.crop_eye = crop_eye
     def __len__(self):
         return len(self.image_list)
     def __getitem__(self, index):
         short_image_path = self.image_list[index]
         image_path = os.path.join(self.image_root, short_image_path)
-        image = cv2.imdecode(np.fromfile(image_path, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+        image = cv2.imread(image_path)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         #image = cv2.resize(image, (128, 128))
         if self.crop_eye:
             image = image[:60, :]

@@ -36,7 +36,7 @@ class MagFace(Module):
         loss_g = 1/(self.u_a**2) * x_norm + 1/(x_norm)
         kernel_norm = F.normalize(self.weight, dim=0)
         feats = F.normalize(feats)
-        cos_theta = torch.mm(feats, kernel_norm) 
+        cos_theta = torch.mm(feats, kernel_norm).float()
         cos_theta = cos_theta.clamp(-1, 1)
         sin_theta = torch.sqrt(1.0 - torch.pow(cos_theta, 2))
         cos_theta_m = cos_theta * cos_m - sin_theta * sin_m

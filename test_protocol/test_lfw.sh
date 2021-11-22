@@ -1,7 +1,7 @@
 python test_lfw.py \
-    --test_set 'AgeDB30' \
+    --test_set 'CPLFW' \
     --data_conf_file 'data_conf.yaml' \
-    --backbone_type 'MobileFaceNet' \
+    --backbone_type 'ResNet' \
     --backbone_conf_file 'backbone_conf.yaml' \
-    --batch_size 2048 \
-    --model_path '/export/home/wangjun492/wj_armory/FaceX-Zoo/test_protocol/out_dir'
+    --batch_size 512 \
+    --model_path '/home/cbw233/src/face_recognition/FaceX-Zoo/training_mode/conventional_training/211122'

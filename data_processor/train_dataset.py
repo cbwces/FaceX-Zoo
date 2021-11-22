@@ -64,6 +64,7 @@ class ImageDataset(Dataset):
         image_path, image_label = self.train_list[index]
         image_path = os.path.join(self.data_root, image_path)
         image = cv2.imread(image_path)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         if self.crop_eye:
             image = image[:60, :]
         #image = cv2.resize(image, (128, 128)) #128 * 128
@@ -71,7 +72,7 @@ class ImageDataset(Dataset):
             image = cv2.flip(image, 1)
         if image.ndim == 2:
             image = image[:, :, np.newaxis]
-        image = (image.transpose((2, 0, 1)) - 127.5) * 0.0078125
+        image = (image.transpose((2, 0, 1)) - 127.5) * 0.007843
         image = torch.from_numpy(image.astype(np.float32))
         return image, image_label
 

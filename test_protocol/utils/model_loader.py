@@ -38,8 +38,8 @@ class ModelLoader:
             model(object): initialized model.
         """
         model_dict = self.model.state_dict()
-        pretrained_dict = torch.load(model_path)['state_dict']
-        #pretrained_dict = torch.load(model_path) 
+        pretrained_dict = torch.load(model_path, map_location='cpu')['state_dict']
+        # pretrained_dict = torch.load(model_path) 
         new_pretrained_dict = {}
         for k in model_dict:
             new_pretrained_dict[k] = pretrained_dict['backbone.'+k] # tradition training
@@ -50,4 +50,4 @@ class ModelLoader:
         model_dict.update(new_pretrained_dict)
         self.model.load_state_dict(model_dict)
         model = torch.nn.DataParallel(self.model).cuda()
-        return model
+        return self.model
