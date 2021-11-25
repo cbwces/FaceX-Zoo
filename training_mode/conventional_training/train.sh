@@ -7,13 +7,12 @@ python train_amp.py \
     --backbone_conf_file '../backbone_conf.yaml' \
     --head_type 'MagFace' \
     --head_conf_file '../head_conf.yaml' \
-    --lr 0.0125 \
+    --lr 0.1 \
     --out_dir "$DATE" \
     --epoches 18 \
     --step '10, 13, 16' \
     --print_freq 50 \
-    --batch_size 64 \
+    --batch_size 512 \
+    --virtual_batch \
     --momentum 0.9 \
-    --log_dir "$DATE" \
-    --resume \
-    --pretrain_model './211122/Epoch_5.pt'
+    --log_dir "$DATE"

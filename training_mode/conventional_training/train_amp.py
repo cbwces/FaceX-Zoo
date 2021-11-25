@@ -49,7 +49,7 @@ def get_lr(optimizer):
     for param_group in optimizer.param_groups:
         return param_group['lr']
 
-def train_one_epoch(data_loader, model, optimizer, criterion, cur_epoch, loss_meter, conf, scaler):
+def train_one_epoch(data_loader, model, optimizer, criterion, cur_epoch, loss_meter, conf, scaler, update_interval=1):
     """Tain one epoch by traditional training.
     """
     for batch_idx, (images, labels) in enumerate(data_loader):
@@ -67,10 +67,11 @@ def train_one_epoch(data_loader, model, optimizer, criterion, cur_epoch, loss_me
             else:
                 outputs = model.forward(images, labels)
                 loss = criterion(outputs, labels)
-        optimizer.zero_grad()
-        scaler.scale(loss).backward()
-        scaler.step(optimizer)
-        scaler.update()
+        scaler.scale(loss / update_interval).backward()
+        if (batch_idx + 1) % update_interval == 0:
+            scaler.step(optimizer)
+            scaler.update()
+            optimizer.zero_grad()
         loss_meter.update(loss.item(), images.shape[0])
         if batch_idx % conf.print_freq == 0:
             loss_avg = loss_meter.avg
@@ -89,8 +90,15 @@ def train_one_epoch(data_loader, model, optimizer, criterion, cur_epoch, loss_me
 def train(conf):
     """Total training procedure.
     """
+    if conf.virtual_batch:
+        assert conf.batch_size % 64 == 0
+        update_interval = conf.batch_size // 64
+        batch_per_epoch = 64
+    else:
+        update_interval = 1
+        batch_per_epoch = conf.batch_size
     data_loader = DataLoader(ImageDataset(conf.data_root, conf.train_file), 
-                             conf.batch_size, True, num_workers = 4)
+                             batch_per_epoch, True, num_workers = 6)
     conf.device = torch.device('cuda:0')
     criterion = torch.nn.CrossEntropyLoss().cuda(conf.device)
     backbone_factory = BackboneFactory(conf.backbone_type, conf.backbone_conf_file)    
@@ -117,7 +125,7 @@ def train(conf):
     model.train()
     for epoch in range(ori_epoch, conf.epoches):
         train_one_epoch(data_loader, model, optimizer, 
-                        criterion, epoch, loss_meter, conf, scaler)
+                        criterion, epoch, loss_meter, conf, scaler, update_interval)
         lr_schedule.step()                        
 
 if __name__ == '__main__':
@@ -146,6 +154,8 @@ if __name__ == '__main__':
                       help = 'The print frequency for training state.')
     conf.add_argument('--batch_size', type = int, default = 128, 
                       help='The training batch size over all gpus.')
+    conf.add_argument('--virtual_batch', action='store_true', default=False, 
+                      help='If using virtual batch.')
     conf.add_argument('--momentum', type = float, default = 0.9, 
                       help = 'The momentum for sgd.')
     conf.add_argument('--log_dir', type = str, default = 'log', 
