@@ -4,4 +4,4 @@ python test_lfw.py \
     --backbone_type 'ResNet' \
     --backbone_conf_file 'backbone_conf.yaml' \
     --batch_size 512 \
-    --model_path '/home/cbw233/src/face_recognition/FaceX-Zoo/training_mode/conventional_training/211122'
+    --model_path '/home/cbw233/src/face_recognition/FaceX-Zoo/training_mode/conventional_training/211129/'

@@ -11,7 +11,7 @@ python train_amp.py \
     --out_dir "$DATE" \
     --epoches 18 \
     --step '10, 13, 16' \
-    --print_freq 50 \
+    --print_freq 400 \
     --batch_size 512 \
     --virtual_batch \
     --momentum 0.9 \

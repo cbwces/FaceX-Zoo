@@ -49,7 +49,7 @@ def get_lr(optimizer):
     for param_group in optimizer.param_groups:
         return param_group['lr']
 
-def train_one_epoch(data_loader, model, optimizer, criterion, cur_epoch, loss_meter, conf, scaler, update_interval=1):
+def train_one_epoch(data_loader, model, optimizer, criterion, cur_epoch, loss_meter, backbone_parameters, conf, scaler, update_interval=1):
     """Tain one epoch by traditional training.
     """
     for batch_idx, (images, labels) in enumerate(data_loader):
@@ -69,6 +69,8 @@ def train_one_epoch(data_loader, model, optimizer, criterion, cur_epoch, loss_me
                 loss = criterion(outputs, labels)
         scaler.scale(loss / update_interval).backward()
         if (batch_idx + 1) % update_interval == 0:
+            scaler.unscale_(optimizer)
+            torch.nn.utils.clip_grad_norm_(backbone_parameters, 5.0)
             scaler.step(optimizer)
             scaler.update()
             optimizer.zero_grad()
@@ -111,9 +113,11 @@ def train(conf):
         model.load_state_dict(state_dict)
     del state_dict
     model = model.cuda()
-    parameters = [p for p in model.parameters() if p.requires_grad]
-    optimizer = optim.SGD(parameters, lr = conf.lr, 
-                          momentum = conf.momentum, weight_decay = 1e-4)
+    # parameters = [p for p in model.parameters() if p.requires_grad]
+    backbone_parameters = [p for n, p in model.named_parameters() if ("backbone" in n) and (p.requires_grad)]
+    head_parameters = [p for n, p in model.named_parameters() if ("head" in n) and (p.requires_grad)]
+    optimizer = optim.SGD(backbone_parameters + head_parameters, lr = conf.lr,
+                          momentum = conf.momentum, weight_decay = 3e-5)
     if conf.resume:
         for param_group in optimizer.param_groups:
             param_group['initial_lr'] = args.lr
@@ -125,7 +129,7 @@ def train(conf):
     model.train()
     for epoch in range(ori_epoch, conf.epoches):
         train_one_epoch(data_loader, model, optimizer, 
-                        criterion, epoch, loss_meter, conf, scaler, update_interval)
+                        criterion, epoch, loss_meter, backbone_parameters, conf, scaler, update_interval)
         lr_schedule.step()                        
 
 if __name__ == '__main__':
