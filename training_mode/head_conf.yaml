@@ -21,6 +21,13 @@ ArcFace:
     margin_am: 0.0
     scale: 32
 
+CosFace:
+    feat_dim: 512
+    num_class: 86877
+    margin_arc: 0.35
+    margin_am: 0.0
+    scale: 64
+
 MagFace:
     feat_dim: 512
     num_class: 86877

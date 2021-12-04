@@ -4,7 +4,7 @@ MobileFaceNet:
     out_w: 7
 
 ResNet:
-    depth: 100
+    depth: 50
     drop_ratio: 0.4
     net_mode: ir
     feat_dim: 512

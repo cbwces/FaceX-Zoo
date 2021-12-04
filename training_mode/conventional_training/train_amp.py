@@ -52,6 +52,7 @@ def get_lr(optimizer):
 def train_one_epoch(data_loader, model, optimizer, criterion, cur_epoch, loss_meter, backbone_parameters, conf, scaler, update_interval=1):
     """Tain one epoch by traditional training.
     """
+    grad_norm = 0
     for batch_idx, (images, labels) in enumerate(data_loader):
         images = images.to(conf.device)
         labels = labels.to(conf.device)
@@ -70,7 +71,8 @@ def train_one_epoch(data_loader, model, optimizer, criterion, cur_epoch, loss_me
         scaler.scale(loss / update_interval).backward()
         if (batch_idx + 1) % update_interval == 0:
             scaler.unscale_(optimizer)
-            torch.nn.utils.clip_grad_norm_(backbone_parameters, 5.0)
+            grad_norm = torch.nn.utils.clip_grad_norm(backbone_parameters, 5.0)
+            grad_norm = grad_norm.data
             scaler.step(optimizer)
             scaler.update()
             optimizer.zero_grad()
@@ -78,8 +80,8 @@ def train_one_epoch(data_loader, model, optimizer, criterion, cur_epoch, loss_me
         if batch_idx % conf.print_freq == 0:
             loss_avg = loss_meter.avg
             lr = get_lr(optimizer)
-            logger.info('Epoch %d, iter %d/%d, lr %f, loss %f' % 
-                        (cur_epoch, batch_idx, len(data_loader), lr, loss_avg))
+            logger.info('Epoch %d, iter %d/%d, lr %f, loss %f, grad_norm %f' % 
+                        (cur_epoch, batch_idx, len(data_loader), lr, loss_avg, grad_norm))
             global_batch_idx = cur_epoch * len(data_loader) + batch_idx
             loss_meter.reset()
     saved_name = 'Epoch_%d.pt' % cur_epoch
@@ -107,17 +109,17 @@ def train(conf):
     head_factory = HeadFactory(conf.head_type, conf.head_conf_file)
     model = FaceModel(backbone_factory, head_factory)
     ori_epoch = 0
-    if conf.resume:
-        ori_epoch = torch.load(args.pretrain_model)['epoch'] + 1
+    if conf.pretrain_model != '':
         state_dict = torch.load(args.pretrain_model)['state_dict']
         model.load_state_dict(state_dict)
-    del state_dict
+        if conf.resume:
+            ori_epoch = torch.load(args.pretrain_model)['epoch'] + 1
+        del state_dict
     model = model.cuda()
     # parameters = [p for p in model.parameters() if p.requires_grad]
     backbone_parameters = [p for n, p in model.named_parameters() if ("backbone" in n) and (p.requires_grad)]
     head_parameters = [p for n, p in model.named_parameters() if ("head" in n) and (p.requires_grad)]
-    optimizer = optim.SGD(backbone_parameters + head_parameters, lr = conf.lr,
-                          momentum = conf.momentum, weight_decay = 3e-5)
+    optimizer = optim.AdamW(backbone_parameters + head_parameters, lr = conf.lr, weight_decay = 3e-5)
     if conf.resume:
         for param_group in optimizer.param_groups:
             param_group['initial_lr'] = args.lr
@@ -164,7 +166,7 @@ if __name__ == '__main__':
                       help = 'The momentum for sgd.')
     conf.add_argument('--log_dir', type = str, default = 'log', 
                       help = 'The directory to save log.log')
-    conf.add_argument('--pretrain_model', type = str, default = 'mv_epoch_8.pt', 
+    conf.add_argument('--pretrain_model', type = str, default = '', 
                       help = 'The path of pretrained model')
     conf.add_argument('--resume', '-r', action = 'store_true', default = False, 
                       help = 'Whether to resume from a checkpoint.')

@@ -48,6 +48,7 @@ class bottleneck_IR(Module):
         self.res_layer = Sequential(
             BatchNorm2d(in_channel),
             Conv2d(in_channel, depth, (3, 3), (1, 1), 1 ,bias=False), PReLU(depth),
+            BatchNorm2d(depth),
             Conv2d(depth, depth, (3, 3), stride, 1 ,bias=False), BatchNorm2d(depth))
 
     def forward(self, x):
